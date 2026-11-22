@@ -253,6 +253,8 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
   renderCharacterSpells();
   function exportCharacterJSON(){
    const traits=traitSelects.map(select=>select.value).filter(Boolean).map(trait=>trait==='Conocedor de…'?'Conocedor de...':trait);
+   const approachTotal=approaches.reduce((sum,input)=>sum+(Number(input.value)||0),0);
+   if(!document.getElementById('charName').value.trim()||!document.getElementById('charArchetype').value||!document.getElementById('charConcept').value.trim()||traits.length!==4||approachTotal!==4){alert('Completa nombre, arquetipo, concepto, cuatro Rasgos y los cuatro puntos de Enfoque antes de exportar.');return;}
    const inventory=[];
    let itemId=1;
    const equipmentLines=equipmentField.value.split('\n').map(line=>line.trim()).filter(Boolean);

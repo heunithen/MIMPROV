@@ -255,11 +255,12 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
    const traits=traitSelects.map(select=>select.value).filter(Boolean).map(trait=>trait==='Conocedor de…'?'Conocedor de...':trait);
    const inventory=[];
    let itemId=1;
-   const equipmentLines=equipmentField.value.split('\\n').map(line=>line.trim()).filter(Boolean);
+   const equipmentLines=equipmentField.value.split('\n').map(line=>line.trim()).filter(Boolean);
    equipmentLines.forEach(line=>{
     const match=line.match(/^•\\s*(.+?):\\s*(.+)$/);
     if(match){
-     const rawTrait=match[1].trim();\n     const trait=rawTrait==='Conocedor de…'?'Conocedor de...':rawTrait;
+     const rawTrait=match[1].trim();
+     const trait=rawTrait==='Conocedor de…'?'Conocedor de...':rawTrait;
      match[2].split(';').map(item=>item.trim().replace(/[.]$/,'')).filter(Boolean).forEach(name=>inventory.push({id:itemId++,name,trait}));
     }else if(!generatedEquipment.includes(line)){
      inventory.push({id:itemId++,name:line.replace(/^[-•]\\s*/,''),trait:'Personal'});

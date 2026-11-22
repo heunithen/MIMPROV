@@ -257,13 +257,13 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
    let itemId=1;
    const equipmentLines=equipmentField.value.split('\n').map(line=>line.trim()).filter(Boolean);
    equipmentLines.forEach(line=>{
-    const match=line.match(/^•\\s*(.+?):\\s*(.+)$/);
+    const match=line.match(/^•\s*(.+?):\s*(.+)$/);
     if(match){
      const rawTrait=match[1].trim();
      const trait=rawTrait==='Conocedor de…'?'Conocedor de...':rawTrait;
      match[2].split(';').map(item=>item.trim().replace(/[.]$/,'')).filter(Boolean).forEach(name=>inventory.push({id:itemId++,name,trait}));
     }else if(!generatedEquipment.includes(line)){
-     inventory.push({id:itemId++,name:line.replace(/^[-•]\\s*/,''),trait:'Personal'});
+     inventory.push({id:itemId++,name:line.replace(/^[-•]\s*/,''),trait:'Personal'});
     }
    });
    const states=['Mermado','Deprimido','Ansioso','Confundido'].filter((name,index)=>document.getElementById(['stateMermado','stateDeprimido','stateAnsioso','stateConfundido'][index]).checked);

@@ -76,7 +76,7 @@
    
    <div><div class="kicker">Anexo · Herramienta de juego</div><h2>Hoja de personaje</h2><p>Registra tu personaje y lleva el control de sus recursos durante la partida.</p></div>
   </div>
-  <div class="sheet-actions"><button class="sheet-btn" type="button" id="sheetPrint">Imprimir / PDF</button><button class="sheet-btn" type="button" id="sheetReset">Limpiar ficha</button></div>
+  <div class="sheet-actions"><button class="sheet-btn" type="button" id="sheetExport">Exportar JSON</button><button class="sheet-btn" type="button" id="sheetPrint">Imprimir / PDF</button><button class="sheet-btn" type="button" id="sheetReset">Limpiar ficha</button></div>
  </div>
  <div class="sheet-grid">
   <section class="sheet-panel">
@@ -143,7 +143,7 @@
  <p class="sheet-footnote">La ficha solo permanece mientras la página está abierta. Al recargarla, todos los campos vuelven a su estado inicial. Usa «Imprimir / PDF» para conservar una copia.</p>
 </section>
 </main></div>
-<footer class="footer"><b>MIMPROV</b><br>Un sistema ligero para historias sin preparación donde cada decisión cuenta y la presión siempre aprieta.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.10</span></footer>
+<footer class="footer"><b>MIMPROV</b><br>Un sistema ligero para historias sin preparación donde cada decisión cuenta y la presión siempre aprieta.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.11</span></footer>
 <script>
 const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks');b.addEventListener('click',()=>n.classList.toggle('open'));n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>n.classList.remove('open')));
 (()=>{
@@ -251,6 +251,49 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
   function renderCharacterSpells(){spellList.innerHTML='';if(!selectedSpells.length){spellList.innerHTML='<p class="sheet-hint">Todavía no has añadido conjuros.</p>';return}selectedSpells.forEach((spell,index)=>{const item=document.createElement('article');item.className='spell-entry';const info=document.createElement('div'),title=document.createElement('h4'),desc=document.createElement('p'),cost=document.createElement('small'),remove=document.createElement('button');title.textContent=spell.name;desc.textContent=spell.description;cost.textContent=spell.cost;info.append(title,desc,cost);remove.type='button';remove.className='sheet-btn spell-remove';remove.textContent='Quitar';remove.setAttribute('aria-label','Quitar '+spell.name);remove.addEventListener('click',()=>{selectedSpells.splice(index,1);renderCharacterSpells()});item.append(info,remove);spellList.appendChild(item)})}
   document.getElementById('addCatalogSpell').addEventListener('click',()=>{const spell=spellCatalog.find(item=>item.name===spellSelect.value);if(!spell||selectedSpells.some(item=>item.name===spell.name))return;selectedSpells.push(spell);renderCharacterSpells();spellSelect.value=''});
   renderCharacterSpells();
+  function exportCharacterJSON(){
+   const traits=traitSelects.map(select=>select.value).filter(Boolean);
+   const inventory=[];
+   let itemId=1;
+   const equipmentLines=equipmentField.value.split('\\n').map(line=>line.trim()).filter(Boolean);
+   equipmentLines.forEach(line=>{
+    const match=line.match(/^•\\s*(.+?):\\s*(.+)$/);
+    if(match){
+     const trait=match[1].trim();
+     match[2].split(';').map(item=>item.trim().replace(/[.]$/,'')).filter(Boolean).forEach(name=>inventory.push({id:itemId++,name,trait}));
+    }else if(!generatedEquipment.includes(line)){
+     inventory.push({id:itemId++,name:line.replace(/^[-•]\\s*/,''),trait:'Personal'});
+    }
+   });
+   const states=['Mermado','Deprimido','Ansioso','Confundido'].filter((name,index)=>document.getElementById(['stateMermado','stateDeprimido','stateAnsioso','stateConfundido'][index]).checked);
+   const magnitude=cost=>cost.includes('Magia extraordinaria')?'extraordinary':cost.includes('Magia moderada')?'moderate':'simple';
+   const spells=selectedSpells.map((spell,index)=>({id:'site_'+(index+1)+'_'+spell.name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),category:'',name:spell.name,effect:spell.description,magnitude:magnitude(spell.cost),willCost:magnitude(spell.cost)==='extraordinary'?3:magnitude(spell.cost)==='moderate'?2:1,status:'accepted',source:'catalog'}));
+   const character={
+    name:document.getElementById('charName').value.trim(),
+    archetype:document.getElementById('charArchetype').value,
+    concept:document.getElementById('charConcept').value,
+    age:document.getElementById('charAge').value,
+    appearance:document.getElementById('charAppearance').value,
+    experience:'',
+    notes:document.getElementById('charNotes').value,
+    portrait:avatarData,
+    approaches:Object.fromEntries(approaches.map(input=>[input.id.replace('approach',''),Number(input.value)||0])),
+    traits,
+    inventory,
+    will,
+    maxWill:4,
+    created:true
+   };
+   const payload={format:'MIMPROV-character',version:2,source:'MIMPROV-web',sheetVersion:'1.11',character,spells,states};
+   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+   const url=URL.createObjectURL(blob);
+   const link=document.createElement('a');
+   link.href=url;
+   link.download=(character.name||'personaje-mimprov').trim().replace(/[^a-z0-9_-]+/gi,'-').toLowerCase()+'.json';
+   document.body.appendChild(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  document.getElementById('sheetExport').addEventListener('click',exportCharacterJSON);
   document.getElementById('sheetPrint').addEventListener('click',()=>window.print());
  document.getElementById('sheetReset').addEventListener('click',()=>{if(!confirm('¿Limpiar todos los datos de esta ficha?'))return;localStorage.removeItem(key);fields.forEach(el=>{if(el.type==='checkbox')el.checked=false;else el.value=''});approaches.forEach(el=>el.value=0);avatarData='';avatar.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="3.5"/><path d="M4 21c.5-4.5 3-7 8-7s7.5 2.5 8 7"/></svg>';setWill(4);setEffort(3);updateApproaches()});
 })();

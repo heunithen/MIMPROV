@@ -195,7 +195,8 @@
  <p class="sheet-footnote">La ficha solo permanece mientras la página está abierta. Al recargarla, todos los campos vuelven a su estado inicial. Usa «Imprimir / PDF» para conservar una copia.</p>
 </section>
 </main></div>
-<footer class="footer"><b>MIMPROV</b><br>Sistema de rol de improvisación y minimalista, para quienes buscan algo ligero para llegar y jugar.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.17</span></footer>
+<section class="section" id="resumen-reglas"><div class="kicker">13 · Referencia rápida</div><h2>Resumen de reglas</h2><div class="card"><h3>Tiradas</h3><p>Elige Enfoque y Rasgo. Lanza 1d6 por punto de Enfoque, +1d6 por Rasgo relacionado y +1d6 por Ayuda válida. Conserva el dado más alto: 6 éxito limpio; 5 éxito con consecuencia; 1–4 fracaso. Dos o más 6: crítico, recuperas 1 Voluntad.</p><p>Con 0d6 o menos, lanza 2d6 y conserva el menor. Ventaja suma 1d6; Desventaja resta 1d6. Se cancelan entre sí.</p><h3>Enfoques</h3><p>Tenacidad: resistir · Disciplina: controlar · Instinto: reaccionar · Ingenio: razonar.</p><h3>Voluntad y Estados</h3><p>Comienzas con 4 Voluntad (máximo 4). Al llegar a 0 quedas <b>Abrumado</b>: todas tus tiradas son 2d6 y conservas el menor, hasta recuperar Voluntad. Ante un fracaso, el Narrador puede asignar un Estado si la ficción lo justifica. Cada Estado resta 1d6 a su Enfoque.</p><h3>Riesgo</h3><p>El Narrador lo establece antes de cada tirada. Solo determina la pérdida de Voluntad al fracasar: bajo −1, medio −2, alto −3. Sin Riesgo, el fracaso no resta Voluntad.</p><h3>Monedas de esfuerzo</h3><p>Comienzas cada sesión con 3. Si la acción se relaciona con tu Arquetipo o Concepto, gasta una para repetir todos los dados ignorando penalizaciones, o añadir +1d6 a la reserva.</p><h3>Conflictos</h3><p>Oposición grupal con Resistencia común; máximo 2 rondas y una acción por participante en cada ronda. Resistencia inicial: 2 × participantes. Cada 6 reduce 1 punto; un 5 logra la acción con consecuencia; un fracaso pierde Voluntad según el Riesgo de esa tirada. El conflicto no fija el Riesgo.</p><h3>Magia</h3><p>Truco simple: 1 Voluntad · Moderada: 2 · Extraordinaria: 3. El coste se paga incluso si la tirada fracasa.</p></div></section>
+<footer class="footer"><b>MIMPROV</b><br>Sistema de rol de improvisación y minimalista, para quienes buscan algo ligero para llegar y jugar.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.18</span></footer>
 <script>
 const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks');b.addEventListener('click',()=>n.classList.toggle('open'));n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>n.classList.remove('open')));
 (()=>{
@@ -339,7 +340,7 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
     maxWill:4,
     created:true
    };
-   const payload={format:'MIMPROV-character',version:2,source:'MIMPROV-web',sheetVersion:'1.17',character,spells,states};
+   const payload={format:'MIMPROV-character',version:2,source:'MIMPROV-web',sheetVersion:'1.18',character,spells,states};
    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
    const url=URL.createObjectURL(blob);
    const link=document.createElement('a');

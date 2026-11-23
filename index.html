@@ -203,7 +203,7 @@
 </section>
 </main></div>
 
-<footer class="footer"><b>MIMPROV</b><br>Sistema de rol de improvisación y minimalista, para quienes buscan algo ligero para llegar y jugar.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.26</span></footer>
+<footer class="footer"><b>MIMPROV</b><br>Sistema de rol de improvisación y minimalista, para quienes buscan algo ligero para llegar y jugar.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.27</span></footer>
 <script>
 const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks');b.addEventListener('click',()=>n.classList.toggle('open'));n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>n.classList.remove('open')));
 (()=>{
@@ -303,12 +303,12 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
  setWill(will);setEffort(effort);
  const avatar=document.getElementById('avatarPreview');if(avatarData)avatar.innerHTML='<img alt="Retrato del personaje" src="'+avatarData+'">';
  document.getElementById('charAvatar').addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');const scale=Math.min(1,420/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);avatarData=canvas.toDataURL('image/jpeg',.78);avatar.innerHTML='<img alt="Retrato del personaje" src="'+avatarData+'">';persist()};img.src=reader.result};reader.readAsDataURL(file)});
- const spellCatalog=[...document.querySelectorAll('#magia .spell-example')].map(card=>({name:card.querySelector('h4')?.textContent.trim()||'',description:card.querySelector('p')?.textContent.trim()||'',cost:card.querySelector('small')?.textContent.trim()||''})).filter(spell=>spell.name);
+ const spellCatalog=[...document.querySelectorAll('#magia .spell-example')].map(card=>({name:card.querySelector('h4')?.textContent.trim()||'',description:card.querySelector('p')?.innerHTML.trim()||'',cost:card.querySelector('small')?.textContent.trim()||''})).filter(spell=>spell.name);
   const spellLevelOrder=cost=>cost.includes('Truco simple')?1:cost.includes('Magia moderada')?2:3;
   spellCatalog.sort((a,b)=>spellLevelOrder(a.cost)-spellLevelOrder(b.cost)||a.name.localeCompare(b.name,'es'));
   const spellSelect=document.getElementById('spellCatalogSelect'),spellList=document.getElementById('characterSpellList'),selectedSpells=[];
   spellCatalog.forEach(spell=>{const option=document.createElement('option');option.value=spell.name;option.textContent=spell.name+' · '+spell.cost;spellSelect.appendChild(option)});
-  function renderCharacterSpells(){spellList.innerHTML='';if(!selectedSpells.length){spellList.innerHTML='<p class="sheet-hint">Todavía no has añadido conjuros.</p>';return}selectedSpells.forEach((spell,index)=>{const item=document.createElement('article');item.className='spell-entry';const info=document.createElement('div'),title=document.createElement('h4'),desc=document.createElement('p'),cost=document.createElement('small'),remove=document.createElement('button');title.textContent=spell.name;desc.textContent=spell.description;cost.textContent=spell.cost;info.append(title,desc,cost);remove.type='button';remove.className='sheet-btn spell-remove';remove.textContent='Quitar';remove.setAttribute('aria-label','Quitar '+spell.name);remove.addEventListener('click',()=>{selectedSpells.splice(index,1);renderCharacterSpells()});item.append(info,remove);spellList.appendChild(item)})}
+  function renderCharacterSpells(){spellList.innerHTML='';if(!selectedSpells.length){spellList.innerHTML='<p class="sheet-hint">Todavía no has añadido conjuros.</p>';return}selectedSpells.forEach((spell,index)=>{const item=document.createElement('article');item.className='spell-entry';const info=document.createElement('div'),title=document.createElement('h4'),desc=document.createElement('p'),cost=document.createElement('small'),remove=document.createElement('button');title.textContent=spell.name;desc.innerHTML=spell.description;cost.textContent=spell.cost;info.append(title,desc,cost);remove.type='button';remove.className='sheet-btn spell-remove';remove.textContent='Quitar';remove.setAttribute('aria-label','Quitar '+spell.name);remove.addEventListener('click',()=>{selectedSpells.splice(index,1);renderCharacterSpells()});item.append(info,remove);spellList.appendChild(item)})}
   document.getElementById('addCatalogSpell').addEventListener('click',()=>{const spell=spellCatalog.find(item=>item.name===spellSelect.value);if(!spell||selectedSpells.some(item=>item.name===spell.name))return;selectedSpells.push(spell);renderCharacterSpells();spellSelect.value=''});
   renderCharacterSpells();
   function exportCharacterJSON(){
@@ -330,7 +330,7 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
    });
    const states=['Mermado','Deprimido','Ansioso','Confundido'].filter((name,index)=>document.getElementById(['stateMermado','stateDeprimido','stateAnsioso','stateConfundido'][index]).checked);
    const magnitude=cost=>cost.includes('Magia extraordinaria')?'extraordinary':cost.includes('Magia moderada')?'moderate':'simple';
-   const spells=selectedSpells.map((spell,index)=>({id:'site_'+(index+1)+'_'+spell.name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),category:'',name:spell.name,effect:spell.description,magnitude:magnitude(spell.cost),willCost:magnitude(spell.cost)==='extraordinary'?3:magnitude(spell.cost)==='moderate'?2:1,status:'accepted',source:'catalog'}));
+   const spells=selectedSpells.map((spell,index)=>({id:'site_'+(index+1)+'_'+spell.name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),category:'',name:spell.name,effect:(()=>{const node=document.createElement('div');node.innerHTML=spell.description;return node.textContent.trim()})(),magnitude:magnitude(spell.cost),willCost:magnitude(spell.cost)==='extraordinary'?3:magnitude(spell.cost)==='moderate'?2:1,status:'accepted',source:'catalog'}));
    const character={
     name:document.getElementById('charName').value.trim(),
     archetype:document.getElementById('charArchetype').value,
@@ -347,7 +347,7 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
     maxWill:4,
     created:true
    };
-   const payload={format:'MIMPROV-character',version:2,source:'MIMPROV-web',sheetVersion:'1.26',character,spells,states};
+   const payload={format:'MIMPROV-character',version:2,source:'MIMPROV-web',sheetVersion:'1.27',character,spells,states};
    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
    const url=URL.createObjectURL(blob);
    const link=document.createElement('a');

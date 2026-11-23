@@ -213,6 +213,7 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
  let avatarData=saved.avatarData||'';
  let will=Number.isFinite(saved.will)?Math.max(0,Math.min(4,saved.will)):4;
  let effort=Number.isFinite(saved.effort)?Math.max(0,Math.min(3,saved.effort)):3;
+ let selectedSpells=[];
  const fields=[...document.querySelectorAll('#ficha-personaje [data-save]')];
  fields.forEach(el=>{if(saved.fields&&Object.prototype.hasOwnProperty.call(saved.fields,el.id)){if(el.type==='checkbox')el.checked=!!saved.fields[el.id];else el.value=saved.fields[el.id]}});
  document.querySelectorAll('#ficha-personaje input[type="checkbox"][id^="state"]').forEach(el=>{if(saved.states&&Object.prototype.hasOwnProperty.call(saved.states,el.id))el.checked=!!saved.states[el.id]});
@@ -255,8 +256,10 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
  function persist(){
   const fieldsData={};fields.forEach(el=>{fieldsData[el.id]=el.type==='checkbox'?el.checked:el.value});
   const statesData={};document.querySelectorAll('#ficha-personaje input[type="checkbox"][id^="state"]').forEach(el=>{statesData[el.id]=el.checked});
-  try{localStorage.setItem(key,JSON.stringify({fields:fieldsData,states:statesData,approaches:Object.fromEntries([...document.querySelectorAll('[data-approach]')].map(el=>[el.id,el.value])),will,effort,avatarData}))}catch(e){}
+  try{localStorage.setItem(key,JSON.stringify({fields:fieldsData,states:statesData,approaches:Object.fromEntries([...document.querySelectorAll('[data-approach]')].map(el=>[el.id,el.value])),will,effort,avatarData,selectedSpells:selectedSpells.map(spell=>spell.name)}))}catch(e){}
  }
+ fields.forEach(el=>{el.addEventListener('input',persist);el.addEventListener('change',persist)});
+ document.querySelectorAll('#ficha-personaje input[type="checkbox"][id^="state"]').forEach(el=>el.addEventListener('change',persist));
  const approaches=[...document.querySelectorAll('[data-approach]')];
  const archetypeData={
   "Valiente":{approaches:{approachTenacidad:1,approachInstinto:1},traits:["Peleador","Superviviente"]},
@@ -332,7 +335,8 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
  const spellCatalog=[...document.querySelectorAll('#magia .spell-example')].map(card=>({name:card.querySelector('h4')?.textContent.trim()||'',description:card.querySelector('p')?.innerHTML.trim()||'',cost:card.querySelector('small')?.textContent.trim()||''})).filter(spell=>spell.name);
   const spellLevelOrder=cost=>cost.includes('Truco simple')?1:cost.includes('Magia moderada')?2:3;
   spellCatalog.sort((a,b)=>spellLevelOrder(a.cost)-spellLevelOrder(b.cost)||a.name.localeCompare(b.name,'es'));
-  const spellSelect=document.getElementById('spellCatalogSelect'),spellList=document.getElementById('characterSpellList'),selectedSpells=[];
+  const spellSelect=document.getElementById('spellCatalogSelect'),spellList=document.getElementById('characterSpellList');
+  (saved.selectedSpells||[]).forEach(name=>{const found=spellCatalog.find(spell=>spell.name===name);if(found)selectedSpells.push(found)});
   spellCatalog.forEach(spell=>{const option=document.createElement('option');option.value=spell.name;option.textContent=spell.name+' · '+spell.cost;spellSelect.appendChild(option)});
   function renderCharacterSpells(){spellList.innerHTML='';if(!selectedSpells.length){spellList.innerHTML='<p class="sheet-hint">Todavía no has añadido conjuros.</p>';return}selectedSpells.forEach((spell,index)=>{const item=document.createElement('article');item.className='spell-entry';const info=document.createElement('div'),title=document.createElement('h4'),desc=document.createElement('p'),cost=document.createElement('small'),remove=document.createElement('button');title.textContent=spell.name;desc.innerHTML=spell.description;cost.textContent=spell.cost;info.append(title,desc,cost);remove.type='button';remove.className='sheet-btn spell-remove';remove.textContent='Quitar';remove.setAttribute('aria-label','Quitar '+spell.name);remove.addEventListener('click',()=>{selectedSpells.splice(index,1);renderCharacterSpells();persist()});item.append(info,remove);spellList.appendChild(item)})}
   document.getElementById('addCatalogSpell').addEventListener('click',()=>{const spell=spellCatalog.find(item=>item.name===spellSelect.value);if(!spell||selectedSpells.some(item=>item.name===spell.name))return;selectedSpells.push(spell);renderCharacterSpells();spellSelect.value='';persist()});

@@ -298,7 +298,7 @@
   </section>
   <section class="sheet-panel full">
    <h3><svg class="sheet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Notas y conjuros</h3>
-   <div class="sheet-field"><label for="spellCatalogSelect">Añadir conjuro del catálogo</label><div class="sheet-fields" style="grid-template-columns:minmax(0,1fr) auto;align-items:end"><select id="spellCatalogSelect"><option value="">— Selecciona un conjuro —</option></select><button class="sheet-btn" type="button" id="addCatalogSpell">Añadir conjuro</button></div><div id="characterSpellList" class="spell-list" aria-live="polite"><p class="sheet-hint">Todavía no has añadido conjuros.</p></div></div>
+   <div class="sheet-field"><label for="spellCatalogSelect">Añadir conjuro del catálogo</label><p class="sheet-hint" id="spellAccessNote">Para escoger conjuros necesitas el Rasgo «Iniciado en lo arcano».</p><div class="sheet-fields" style="grid-template-columns:minmax(0,1fr) auto;align-items:end"><select id="spellCatalogSelect" disabled><option value="">— Selecciona un conjuro —</option></select><button class="sheet-btn" type="button" id="addCatalogSpell" disabled>Añadir conjuro</button></div><div id="characterSpellList" class="spell-list" aria-live="polite"><p class="sheet-hint">Todavía no has añadido conjuros.</p></div></div>
    <div class="sheet-field"><label for="charNotes">Notas de aventura y vínculos</label><textarea id="charNotes" data-save style="min-height:120px" placeholder="Anota aquí aquello que quieras recordar."></textarea></div>
   </section>
  </div>
@@ -306,7 +306,7 @@
 </section>
 </main></div>
 
-<footer class="footer"><b>MIMPROV</b><br>Sistema de rol de improvisación y minimalista, para quienes buscan algo ligero para llegar y jugar.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.40</span></footer>
+<footer class="footer"><b>MIMPROV</b><br>Sistema de rol de improvisación y minimalista, para quienes buscan algo ligero para llegar y jugar.<br><span class="version" style="display:inline-block;margin-top:14px;padding:6px 12px;border:1px solid var(--accent);border-radius:999px;color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.08em">VERSIÓN 1.41</span></footer>
 <script>
 const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks');b.addEventListener('click',()=>n.classList.toggle('open'));n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>n.classList.remove('open')));
 (()=>{
@@ -445,9 +445,12 @@ const b=document.getElementById('menuBtn'),n=document.getElementById('navlinks')
   const spellSelect=document.getElementById('spellCatalogSelect'),spellList=document.getElementById('characterSpellList');
   (saved.selectedSpells||[]).forEach(name=>{const found=spellCatalog.find(spell=>spell.name===name);if(found)selectedSpells.push(found)});
   spellCatalog.forEach(spell=>{const option=document.createElement('option');option.value=spell.name;option.textContent=spell.name+' · '+spell.cost;spellSelect.appendChild(option)});
+  const spellAccessNote=document.getElementById('spellAccessNote'),addSpellButton=document.getElementById('addCatalogSpell');
+  function updateSpellAccess(){const allowed=traitSelects.some(select=>select.value==='Iniciado en lo arcano');spellSelect.disabled=!allowed;addSpellButton.disabled=!allowed;spellAccessNote.hidden=allowed;}
+  traitSelects.forEach(select=>select.addEventListener('change',updateSpellAccess));
   function renderCharacterSpells(){spellList.innerHTML='';if(!selectedSpells.length){spellList.innerHTML='<p class="sheet-hint">Todavía no has añadido conjuros.</p>';return}selectedSpells.forEach((spell,index)=>{const item=document.createElement('article');item.className='spell-entry';const info=document.createElement('div'),title=document.createElement('h4'),desc=document.createElement('p'),cost=document.createElement('small'),remove=document.createElement('button');title.textContent=spell.name;desc.innerHTML=spell.description;cost.textContent=spell.cost;info.append(title,desc,cost);remove.type='button';remove.className='sheet-btn spell-remove';remove.textContent='Quitar';remove.setAttribute('aria-label','Quitar '+spell.name);remove.addEventListener('click',()=>{selectedSpells.splice(index,1);renderCharacterSpells();persist()});item.append(info,remove);spellList.appendChild(item)})}
-  document.getElementById('addCatalogSpell').addEventListener('click',()=>{const spell=spellCatalog.find(item=>item.name===spellSelect.value);if(!spell||selectedSpells.some(item=>item.name===spell.name))return;selectedSpells.push(spell);renderCharacterSpells();spellSelect.value='';persist()});
-  renderCharacterSpells();
+  addSpellButton.addEventListener('click',()=>{if(!traitSelects.some(select=>select.value==='Iniciado en lo arcano'))return;const spell=spellCatalog.find(item=>item.name===spellSelect.value);if(!spell||selectedSpells.some(item=>item.name===spell.name))return;selectedSpells.push(spell);renderCharacterSpells();spellSelect.value='';persist()});
+  renderCharacterSpells();updateSpellAccess();
   function exportCharacterJSON(){
    const traits=traitSelects.map(select=>select.value).filter(Boolean).map(trait=>trait==='Conocedor de…'?'Conocedor de...':trait);
    const approachTotal=approaches.reduce((sum,input)=>sum+(Number(input.value)||0),0);
